@@ -184,8 +184,9 @@ public class LocalNetService implements IService{
             if(sdWebSocketServerConfig != null) {
                 boolean sslFlag  = sdWebSocketServerConfig.isSsl();
                 if(sslFlag) {
-                    SelfSignedCertificate ssc = new SelfSignedCertificate();
-                    sslContext = SslContextBuilder.forServer(ssc.certificate(), ssc.privateKey()).build();
+                    //TODO 不兼容JDK17
+//                    SelfSignedCertificate ssc = new SelfSignedCertificate();
+//                    sslContext = SslContextBuilder.forServer(ssc.certificate(), ssc.privateKey()).build();
                 }
 
             }

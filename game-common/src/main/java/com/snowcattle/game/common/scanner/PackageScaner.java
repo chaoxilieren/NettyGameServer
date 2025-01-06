@@ -2,7 +2,6 @@ package com.snowcattle.game.common.scanner;
 
 import com.snowcattle.game.common.constant.Loggers;
 import org.slf4j.Logger;
-import sun.net.www.protocol.file.FileURLConnection;
 
 import java.io.File;
 import java.net.JarURLConnection;
@@ -89,7 +88,8 @@ public final class PackageScaner
 				}
 				jarFile.close();
 			}
-			else if (tmpURLConnection instanceof FileURLConnection)
+			// jDK17 不支持的api
+			else /*if (tmpURLConnection instanceof FileURLConnection)*/
 			{
 				File file = new File(url.getFile());
 				if (file.exists() && file.isDirectory())

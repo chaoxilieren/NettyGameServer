@@ -30,8 +30,9 @@ public class SSLService implements IService{
         GameServerConfig gameServerConfig = gameServerConfigService.getGameServerConfig();
         boolean webSocketSSLFlag = gameServerConfig.isWebSockectSSLFlag();
         if(webSocketSSLFlag){
-            SelfSignedCertificate ssc = new SelfSignedCertificate();
-            sslCtx = SslContextBuilder.forServer(ssc.certificate(), ssc.privateKey()).build();
+            //TODO 不兼容jdk17
+//            SelfSignedCertificate ssc = new SelfSignedCertificate();
+//            sslCtx = SslContextBuilder.forServer(ssc.certificate(), ssc.privateKey()).build();
         }
     }
 
