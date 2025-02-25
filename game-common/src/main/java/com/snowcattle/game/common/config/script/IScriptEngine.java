@@ -57,4 +57,12 @@ public interface IScriptEngine {
      * @return
      */
     public String getScriptContent(String scriptFile, String charset);
+
+    /**
+     * 使用 Nashorn 引擎执行脚本
+     * 
+     * @param bindings 脚本的参数
+     * @param script 脚本内容
+     */
+    void executeScriptWithNashorn(Map<String, Object> bindings, String script);
 }

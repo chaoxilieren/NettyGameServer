@@ -16,6 +16,6 @@ public class ShutdownHook implements Runnable {
     }
 
     public void run() {  //重写Runnable中的run方法并在此销毁bean
-        this.classPathXmlApplicationContext.destroy();
+        this.classPathXmlApplicationContext.close();
     }
 }

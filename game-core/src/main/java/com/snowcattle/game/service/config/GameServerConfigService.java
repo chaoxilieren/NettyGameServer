@@ -12,6 +12,8 @@ import com.snowcattle.game.service.IService;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URL;
 
@@ -31,6 +33,8 @@ public class GameServerConfigService implements IService {
     protected NetUdpServerConfig netUdpServerConfig;
     protected NetHttpServerConfig netHttpServerConfig;
     protected NetWebSocketServerConfig netWebSocketServerConfig;
+
+    private static final Logger logger = LoggerFactory.getLogger(GameServerConfigService.class);
 
     @Override
     public String getId() {
@@ -117,13 +121,23 @@ public class GameServerConfigService implements IService {
         return gameServerConfig;
     }
 
-    protected void initConfig(){
-         String cfgPath = GlobalConstants.ConfigFile.GAME_SERVER_CONIFG;
-         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-         URL url = classLoader.getResource(cfgPath);
-         GameServerConfig  gameServerConfig = ConfigUtil.buildConfig(GameServerConfig.class, url);
-         this.gameServerConfig = gameServerConfig;
-//         LocalMananger.getInstance().add(this.gameServerConfig, GameServerConfig.class);
+    protected void initConfig() {
+        String cfgPath = GlobalConstants.ConfigFile.GAME_SERVER_CONIFG;
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        URL url = classLoader.getResource(cfgPath);
+        
+        if (url == null) {
+            throw new IllegalStateException("Cannot find config file: " + cfgPath);
+        }
+        
+        logger.info("Loading config from: " + url);
+        GameServerConfig gameServerConfig = ConfigUtil.buildConfig(GameServerConfig.class, url);
+        
+        if (gameServerConfig == null) {
+            throw new IllegalStateException("Failed to load GameServerConfig");
+        }
+        
+        this.gameServerConfig = gameServerConfig;
     }
 
     private void initDiffConfig(){
@@ -132,7 +146,6 @@ public class GameServerConfigService implements IService {
         URL url = classLoader.getResource(cfgPath);
         GameServerDiffConfig gameServerDiffConfig = ConfigUtil.buildConfig(GameServerDiffConfig.class, url);
         this.gameServerDiffConfig = gameServerDiffConfig;
-//        LocalMananger.getInstance().add(this.gameServerDiffConfig, GameServerDiffConfig.class);
     }
 
     public GameDynamicPropertiesConfig getGameDynamicPropertiesConfig() {

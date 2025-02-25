@@ -3,6 +3,7 @@ package com.snowcattle.game.bootstrap;
 import com.snowcattle.game.common.constant.GlobalConstants;
 import com.snowcattle.game.common.util.MemUtils;
 import com.snowcattle.game.bootstrap.manager.LocalMananger;
+import com.snowcattle.game.service.config.GameServerConfigService;
 import com.snowcattle.game.service.net.tcp.AbstractServerService;
 import com.snowcattle.game.common.constant.Loggers;
 import com.snowcattle.game.bootstrap.manager.GlobalManager;
@@ -78,8 +79,11 @@ public class GameServer extends AbstractServerService {
         this.initServer();
     }
 
-    public void initSpring()throws Exception{
+    public void initSpring() throws Exception  {
+        logger.info("Starting with JDK version: {}", System.getProperty("java.version"));
+
         ClassPathXmlApplicationContext classPathXmlApplicationContext = new ClassPathXmlApplicationContext(new String[]{"bean/*.xml"});
+        
         Runtime.getRuntime().addShutdownHook(new Thread(new ShutdownHook(classPathXmlApplicationContext)));
     }
 

@@ -12,9 +12,9 @@ import java.lang.reflect.Field;
  */
 public abstract class AbstractSpringStart {
 
-    private final Logger logger = Loggers.serverLogger;
+    private static final Logger logger = Loggers.serverLogger;
 
-    public  void start() throws Exception {
+    public void start() throws Exception {
         // 获取对象obj的所有属性域
         Field[] fields = this.getClass().getDeclaredFields();
 
@@ -22,32 +22,29 @@ public abstract class AbstractSpringStart {
             // 对于每个属性，获取属性名
             String varName = field.getName();
             try {
-                boolean access = field.isAccessible();
-                if (!access) {
-                    field.setAccessible(true);
-                }
-
-                //从obj中获取field变量
+                // 修改反射访问检查方式
+                field.setAccessible(true);
+                
+                // 从obj中获取field变量
                 Object object = field.get(this);
-                if(object instanceof IService){
+                if (object instanceof IService) {
                     IService iService = (IService) object;
                     iService.startup();
                     logger.info(iService.getId() + " service start up");
-                }else{
+                } else if (object != null) {
                     logger.info(object.getClass().getSimpleName() + " start up");
                 }
-                if (!access) {
-                    field.setAccessible(false);
-                }
+                
+                field.setAccessible(false);
+                
             } catch (Exception ex) {
-                ex.printStackTrace();
+                logger.error("Failed to start service: " + varName, ex);
+                throw ex;
             }
-
         }
     }
 
-    public void stop() throws Exception{
-
+    public void stop() throws Exception {
         // 获取对象obj的所有属性域
         Field[] fields = this.getClass().getDeclaredFields();
 
@@ -55,27 +52,25 @@ public abstract class AbstractSpringStart {
             // 对于每个属性，获取属性名
             String varName = field.getName();
             try {
-                boolean access = field.isAccessible();
-                if (!access) {
-                    field.setAccessible(true);
-                }
+                // 修改反射访问检查方式
+                field.setAccessible(true);
 
-                //从obj中获取field变量
+                // 从obj中获取field变量
                 Object object = field.get(this);
-                if(object instanceof IService){
+                if (object instanceof IService) {
                     IService iService = (IService) object;
                     iService.shutdown();
                     logger.info(iService.getId() + " shut down");
-                }else{
+                } else if (object != null) {
                     logger.info(object.getClass().getSimpleName() + " shut down");
                 }
-                if (!access) {
-                    field.setAccessible(false);
-                }
+                
+                field.setAccessible(false);
+                
             } catch (Exception ex) {
-                ex.printStackTrace();
+                logger.error("Failed to stop service: " + varName, ex);
+                throw ex;
             }
-
         }
     }
 }

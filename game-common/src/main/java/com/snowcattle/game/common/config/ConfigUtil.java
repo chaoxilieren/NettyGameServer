@@ -60,11 +60,15 @@ public final class ConfigUtil {
 			logger.info("Load config [" + configClass + "] from [" + configURL
                         + ']');
 		}
+		
+		// 添加调试日志
+		logger.debug("Config URL path: " + configURL.getPath());
+		
 		T _config;
 		try {
 			_config = configClass.newInstance();
 		} catch (InstantiationException | IllegalAccessException e1) {
-			throw new RuntimeException(e1);
+			throw new RuntimeException("Failed to create config instance", e1);
 		}
         IScriptEngine _jsEngine = new JSScriptManagerImpl("UTF-8");
 		Map<String, Object> _bindings = new HashMap<String, Object>();
@@ -81,13 +85,28 @@ public final class ConfigUtil {
 		try {
 			_r = new InputStreamReader(configURL.openStream(), "UTF-8");
 			_scriptContent = IOUtils.toString(_r);
+			
+			// 添加调试日志
+			logger.debug("Script content: " + _scriptContent);
+			
 		} catch (IOException e) {
 			throw new IllegalStateException("Can't load config from url ["
-                                            + configURL + ']');
+                                            + configURL + ']', e);
 		} finally {
 			IOUtils.closeQuietly(_r);
 		}
-		_jsEngine.runScript(_bindings, _scriptContent);
+		
+		try {
+			_jsEngine.executeScriptWithNashorn(_bindings, _scriptContent);
+		} catch (Exception e) {
+			logger.error("Failed to run script", e);
+			throw new IllegalStateException("Failed to run config script", e);
+		}
+		
+		if (_config == null) {
+			throw new IllegalStateException("Config is null after script execution");
+		}
+		
 		_config.validate();
 		return _config;
 	}

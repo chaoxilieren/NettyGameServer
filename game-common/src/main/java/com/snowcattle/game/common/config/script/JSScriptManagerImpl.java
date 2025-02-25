@@ -13,6 +13,7 @@ import javax.script.SimpleBindings;
 import com.snowcattle.game.common.constant.CommonErrorLogInfo;
 import com.snowcattle.game.common.util.ErrorsUtil;
 import org.apache.commons.io.FileUtils;
+import org.openjdk.nashorn.api.scripting.NashornScriptEngineFactory;
 
 
 /**
@@ -135,6 +136,28 @@ public class JSScriptManagerImpl implements IScriptEngine {
         } catch (ScriptException se) {
             throw new RuntimeException(ErrorsUtil.error(CommonErrorLogInfo.SCRITP_EXECUTE_FAIL,
                                                         "Throw Exception", exp), se);
+        }
+    }
+
+    @Override
+    public void executeScriptWithNashorn(Map<String, Object> bindings, String script) {
+        try {
+            // 使用新的 Nashorn 引擎
+            NashornScriptEngineFactory factory = new NashornScriptEngineFactory();
+            ScriptEngine engine = factory.getScriptEngine();
+            
+            // 添加绑定
+            if (bindings != null) {
+                for (Map.Entry<String, Object> entry : bindings.entrySet()) {
+                    engine.put(entry.getKey(), entry.getValue());
+                }
+            }
+            
+            // 执行脚本
+            engine.eval(script);
+            
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to run script", e);
         }
     }
 }
