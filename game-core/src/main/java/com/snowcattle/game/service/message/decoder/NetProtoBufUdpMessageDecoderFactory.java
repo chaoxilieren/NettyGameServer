@@ -34,28 +34,40 @@ public class NetProtoBufUdpMessageDecoderFactory implements INetProtoBufUdpMessa
         netMessageHead.setPlayerId(byteBuf.readLong());
         netMessageHead.setTocken(byteBuf.readInt());
 
-        MessageRegistry messageRegistry = LocalMananger.getInstance().getLocalSpringServiceManager().getMessageRegistry();
-        AbstractNetProtoBufMessage netMessage = messageRegistry.getMessage(cmd);
         //读取body
         NetProtoBufMessageBody netMessageBody = new NetProtoBufMessageBody();
         int byteLength = byteBuf.readableBytes();
         byte[] bytes = new byte[byteLength];
         byteBuf.getBytes(byteBuf.readerIndex(), bytes);
         netMessageBody.setBytes(bytes);
-        netMessage.setNetMessageHead(netMessageHead);
-        netMessage.setNetMessageBody(netMessageBody);
+
+        // 支持测试环境：如果 Spring 未初始化，抛出异常
+        AbstractNetProtoBufMessage netMessage;
         try {
-            netMessage.decoderNetProtoBufMessageBody();
-            netMessage.releaseMessageBody();
-        }catch (Exception e){
-            throw new CodecException("message cmd " + cmd + "decoder error", e);
+            LocalMananger localMananger = LocalMananger.getInstance();
+            if (localMananger != null && localMananger.getLocalSpringServiceManager() != null) {
+                MessageRegistry messageRegistry = localMananger.getLocalSpringServiceManager().getMessageRegistry();
+                if (messageRegistry != null) {
+                    netMessage = messageRegistry.getMessage(cmd);
+                    if (netMessage != null) {
+                        netMessage.setNetMessageHead(netMessageHead);
+                        netMessage.setNetMessageBody(netMessageBody);
+                        try {
+                            netMessage.decoderNetProtoBufMessageBody();
+                            netMessage.releaseMessageBody();
+                        } catch (Exception e) {
+                            throw new CodecException("message cmd " + cmd + "decoder error", e);
+                        }
+                        if (Loggers.sessionLogger.isDebugEnabled()) {
+                            Loggers.sessionLogger.debug("revice net message" + netMessage.toAllInfoString());
+                        }
+                        return netMessage;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("警告: Spring 未初始化，UDP 消息解码失败。错误: " + e.getMessage());
         }
-
-        //增加协议解析打印
-        if(Loggers.sessionLogger.isDebugEnabled()){
-            Loggers.sessionLogger.debug("revice net message" + netMessage.toAllInfoString());
-        }
-
-        return netMessage;
+        throw new CodecException("无法创建消息对象，cmd=" + cmd + "，请确保 Spring 上下文已启动且消息已注册");
     }
 }

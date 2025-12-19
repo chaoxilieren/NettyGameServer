@@ -21,10 +21,10 @@ public final class CodeServer {
 
         try{
             ServerBootstrap serverBootstrap = new ServerBootstrap();
-            serverBootstrap = serverBootstrap.group(bossGroup, bossGroup);
+            serverBootstrap = serverBootstrap.group(bossGroup, workerGroup);
             serverBootstrap.channel(NioServerSocketChannel.class)
                     .option(ChannelOption.SO_BACKLOG, 1024)
-                    .option(ChannelOption.TCP_NODELAY, true)
+                    .childOption(ChannelOption.TCP_NODELAY, true)
                     .handler(new LoggingHandler(LogLevel.INFO))
                     .childHandler(new CodeServerChannelInitializer());
             ChannelFuture serverChannelFuture = serverBootstrap.bind(Port).sync();

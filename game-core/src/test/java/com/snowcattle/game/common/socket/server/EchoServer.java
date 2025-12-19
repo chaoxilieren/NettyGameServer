@@ -22,10 +22,10 @@ public final class EchoServer {
 
         try{
             ServerBootstrap serverBootstrap = new ServerBootstrap();
-            serverBootstrap = serverBootstrap.group(bossGroup, bossGroup);
+            serverBootstrap = serverBootstrap.group(bossGroup, workerGroup);
             serverBootstrap.channel(NioServerSocketChannel.class)
                     .option(ChannelOption.SO_BACKLOG, 1024)
-                    .option(ChannelOption.TCP_NODELAY, true)
+                    .childOption(ChannelOption.TCP_NODELAY, true)
                     .handler(new LoggingHandler(LogLevel.INFO))
 //                    .childHandler(new ServerChannelInitializer());
 //                    .childHandler(new StringServerChannelInitializer());
@@ -33,9 +33,11 @@ public final class EchoServer {
                     .childHandler(new NetMessageServerChannleInitializer());
             ChannelFuture serverChannelFuture = serverBootstrap.bind(Port).sync();
 
+            System.out.println("EchoServer 启动成功，监听端口: " + Port);
             serverChannelFuture.channel().closeFuture().sync();
         }catch (Exception e){
-
+            System.err.println("EchoServer 启动失败: " + e.getMessage());
+            e.printStackTrace();
         }finally {
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();

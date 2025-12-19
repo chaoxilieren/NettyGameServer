@@ -56,6 +56,7 @@ public class DisruptorExecutorService implements IUpdateExecutor {
     public void startup() {
         EventBus eventBus = disruptorDispatchThread.getEventBus();
         executorService = new NonOrderedQueuePoolExecutor(poolName, excutorSize);
+        // 定义更核心线程数一样的消费者
         cycleEventHandler = new CycleEventHandler[excutorSize];
         for(int i = 0; i < excutorSize; i++){
             cycleEventHandler[i] = new CycleEventHandler(eventBus);

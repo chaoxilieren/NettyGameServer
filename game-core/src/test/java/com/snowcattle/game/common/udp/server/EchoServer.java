@@ -39,6 +39,7 @@ public final class EchoServer {
                 .handler(new UdpProtoBufServerChannelInitializer());
 
         // 服务端监听在9999端口
+        System.out.println("UDP EchoServer 启动成功，监听端口: 9999");
         b.bind(9999).sync().channel().closeFuture().sync();
     }
 }

@@ -11,7 +11,7 @@ public final class AsyncEventServiceTest {
         EventBus eventBus = new EventBus();
 
         eventBus.addEventListener(new SingleRunEventListener());
-        AsyncEventService asyncEventService = new AsyncEventService(eventBus, Short.MAX_VALUE, 2, "async_worker", 20, "async_event_handler", Short.MAX_VALUE);
+        AsyncEventService asyncEventService = new AsyncEventService(eventBus, Short.MAX_VALUE, 2, "async_worker", 10, "async_event_handler", Short.MAX_VALUE);
         asyncEventService.startUp();
 
         int size = 1000000;

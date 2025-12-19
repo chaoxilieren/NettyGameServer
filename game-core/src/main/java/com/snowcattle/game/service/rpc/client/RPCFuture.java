@@ -19,7 +19,7 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * RPCFuture for async RPC call
  */
-public class RPCFuture implements Future<Object> {
+public class RPCFuture implements IRPCFuture {
     private final Logger logger = Loggers.rpcLogger;
     private final Sync sync;
     private final RpcRequest request;
@@ -110,7 +110,8 @@ public class RPCFuture implements Future<Object> {
         }
     }
 
-    public RPCFuture addCallback(AsyncRPCCallback callback) {
+    @Override
+    public IRPCFuture addCallback(AsyncRPCCallback callback) {
         lock.lock();
         try {
             if (isDone()) {

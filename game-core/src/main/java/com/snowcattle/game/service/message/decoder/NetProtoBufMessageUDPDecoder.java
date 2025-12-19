@@ -21,8 +21,20 @@ public class NetProtoBufMessageUDPDecoder extends MessageToMessageDecoder<Datagr
 
     public NetProtoBufMessageUDPDecoder() {
         this(CharsetUtil.UTF_8);
-        NetProtoBufUdpMessageDecoderFactory netProtoBufUdpMessageDecoderFactory = LocalMananger.getInstance().getLocalSpringBeanManager().getNetProtoBufUdpMessageDecoderFactory();
-        this.iNetMessageDecoderFactory = netProtoBufUdpMessageDecoderFactory;
+        try {
+            LocalMananger localMananger = LocalMananger.getInstance();
+            if (localMananger != null && localMananger.getLocalSpringBeanManager() != null) {
+                NetProtoBufUdpMessageDecoderFactory netProtoBufUdpMessageDecoderFactory = 
+                    localMananger.getLocalSpringBeanManager().getNetProtoBufUdpMessageDecoderFactory();
+                if (netProtoBufUdpMessageDecoderFactory != null) {
+                    this.iNetMessageDecoderFactory = netProtoBufUdpMessageDecoderFactory;
+                    return;
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("警告: Spring 未初始化，UDP 解码器将无法工作。错误: " + e.getMessage());
+        }
+        throw new IllegalStateException("NetProtoBufUdpMessageDecoderFactory 未初始化，请确保 Spring 上下文已启动");
     }
 
     @Override

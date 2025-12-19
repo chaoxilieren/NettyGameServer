@@ -1,0 +1,125 @@
+@startuml 异步存库完整流程
+skinparam ParticipantPadding 20
+skinparam BoxPadding 10
+
+participant "业务层" as Business
+participant "EntityService" as EntityService
+participant "EntityAysncServiceProxy" as Proxy
+participant "AsyncDbRegisterCenter" as RegisterCenter
+' Redis相关参与者
+participant "Redis List队列\nEntityClassName#unionKey" as RedisList
+participant "Redis Set集合\nay_db#dbId#EntityClassName" as RedisSet
+participant "AsyncDbOperationCenter" as OperationCenter
+participant "ScheduledExecutorService" as ScheduledPool
+participant "AsyncDbOperation" as AsyncOperation
+participant "TransactionService" as TransactionService
+participant "AsyncDBSaveTransactionEntity" as TransactionEntity
+database "MySQL" as MySQL
+
+== 数据入队阶段 ==
+
+Business -> EntityService : insertEntity/updateEntity/deleteEntity
+activate EntityService
+
+EntityService -> Proxy : intercept() (CGLIB代理)
+activate Proxy
+
+Proxy -> Proxy : 检查@DbOperation注解\n检查AsyncSave接口
+Proxy -> RegisterCenter : asyncRegisterEntity()
+activate RegisterCenter
+
+RegisterCenter -> RegisterCenter : 计算分库分表索引\ndbSelectId
+RegisterCenter -> RegisterCenter : 获取unionKey\n(玩家唯一标识)
+RegisterCenter -> RegisterCenter : 创建AsyncEntityWrapper\n(序列化操作数据)
+
+RegisterCenter -> RedisList : rPushString(aysncUnionKey, serializedData)
+note right: 玩家级别队列\n保证操作顺序
+RedisList -> RedisList : 数据入队
+
+RegisterCenter -> RedisSet : saddString(dbRedisKey, aysncUnionKey)
+note right: 表级别集合\n标记需要保存的玩家
+RedisSet -> RedisSet : 添加到集合
+
+deactivate RegisterCenter
+deactivate Proxy
+deactivate EntityService
+
+== 定时任务启动（服务器启动时） ==
+
+OperationCenter -> ScheduledPool : startup()\nnewScheduledThreadPool(workerSize)
+activate ScheduledPool
+
+OperationCenter -> OperationCenter : 获取所有AsyncDbOperation实现类
+loop 每个AsyncDbOperation
+  OperationCenter -> ScheduledPool : scheduleAtFixedRate(asyncDbOperation, 0, 5, SECONDS)
+  note right: 每5秒执行一次
+end
+
+deactivate ScheduledPool
+
+== 数据消费阶段（定时执行） ==
+
+ScheduledPool -> AsyncOperation : run() (每5秒)
+activate AsyncOperation
+
+AsyncOperation -> AsyncOperation : 遍历所有数据库(dbCount)
+loop 每个数据库
+  AsyncOperation -> RedisSet : scardString(dbRedisKey)\n获取待处理数量
+  RedisSet -> AsyncOperation : saveSize
+
+  loop 处理每个playerKey
+    AsyncOperation -> RedisSet : spopString(dbRedisKey)\n原子弹出playerKey
+    RedisSet -> AsyncOperation : playerKey
+
+    alt playerKey为空
+      AsyncOperation -> AsyncOperation : break
+    else playerKey不为空
+      AsyncOperation -> TransactionService : commitTransaction()\n创建事务实体
+      activate TransactionService
+
+      TransactionService -> TransactionEntity : 创建AsyncDBSaveTransactionEntity\n(使用playerKey作为锁key)
+      activate TransactionEntity
+
+      TransactionService -> RedisList : 尝试获取Redis锁\n(基于playerKey)
+      note right: redis-game-transaction\n分布式锁机制
+      
+      alt 获取锁成功
+        TransactionEntity -> RedisList : lpop(playerKey)\n从队列取出操作数据
+        RedisList -> TransactionEntity : serializedData
+        
+        loop 处理队列中的所有操作
+          TransactionEntity -> TransactionEntity : deserialize()\n反序列化AsyncEntityWrapper
+          TransactionEntity -> TransactionEntity : saveAsyncEntityWrapper()
+          
+          alt 操作类型判断
+            TransactionEntity -> EntityService : insertEntity()
+            TransactionEntity -> EntityService : updateEntity()
+            TransactionEntity -> EntityService : deleteEntity()
+          end
+          
+          EntityService -> MySQL : 执行SQL操作
+          MySQL -> EntityService : 返回结果
+          
+          TransactionEntity -> TransactionEntity : asyncDbOperationMonitor.monitor()\n性能监控
+        end
+        
+        TransactionService -> RedisList : 释放Redis锁
+        TransactionService -> AsyncOperation : SUCCESS
+
+      else 获取锁失败
+        TransactionService -> AsyncOperation : FAIL
+        AsyncOperation -> RedisSet : saddString(dbRedisKey, playerKey)\n重新放回集合
+        note right: 下次继续处理
+      end
+
+      deactivate TransactionEntity
+      deactivate TransactionService
+    end
+  end
+end
+
+AsyncOperation -> AsyncOperation : asyncDbOperationMonitor.printInfo()\n打印统计信息
+
+deactivate AsyncOperation
+
+@enduml

@@ -39,7 +39,7 @@ public class EntityProxy< T extends IEntity> implements MethodInterceptor {
     //实现MethodInterceptor接口方法
     public Object intercept(Object obj, Method method, Object[] args,
                             MethodProxy methodProxy) throws Throwable {
-        //通过代理类调用父类中的方法
+        //通过代理类调用父类中的方法,obj为代理对象
         Object result;
         if(!collectFlag){
             result = methodProxy.invokeSuper(obj, args);

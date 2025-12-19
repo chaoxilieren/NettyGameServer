@@ -15,16 +15,16 @@ import java.util.List;
 public class JdbcTest {
     public static void main(String[] args) throws Exception {
         ClassPathXmlApplicationContext classPathXmlApplicationContext = new ClassPathXmlApplicationContext(new String[]{"bean/*.xml"});
-        TockenService TockenService = getTockenService(classPathXmlApplicationContext);
-        insertTest(classPathXmlApplicationContext, TockenService);
-        insertBatchTest(classPathXmlApplicationContext, TockenService);
-        Tocken tocken = getTest(classPathXmlApplicationContext, TockenService);
-        List<Tocken> tockenList = getTockenList(classPathXmlApplicationContext, TockenService);
-        updateTest(classPathXmlApplicationContext, TockenService, tocken);
-        updateBatchTest(classPathXmlApplicationContext, TockenService, tockenList);
-        deleteTest(classPathXmlApplicationContext, TockenService, tocken);
-        deleteBatchTest(classPathXmlApplicationContext, TockenService, tockenList);
-        getTockenList(classPathXmlApplicationContext, TockenService);
+        TockenService tockenService = getTockenService(classPathXmlApplicationContext);
+        insertTest(classPathXmlApplicationContext, tockenService);
+        insertBatchTest(classPathXmlApplicationContext, tockenService);
+        Tocken tocken = getTest(classPathXmlApplicationContext, tockenService);
+        List<Tocken> tockenList = getTockenList(classPathXmlApplicationContext, tockenService);
+        updateTest(classPathXmlApplicationContext, tockenService, tocken);
+        updateBatchTest(classPathXmlApplicationContext, tockenService, tockenList);
+        deleteTest(classPathXmlApplicationContext, tockenService, tocken);
+        deleteBatchTest(classPathXmlApplicationContext, tockenService, tockenList);
+        getTockenList(classPathXmlApplicationContext, tockenService);
     }
 
 
@@ -71,7 +71,7 @@ public class JdbcTest {
     public static void insertTest(ClassPathXmlApplicationContext classPathXmlApplicationContext, TockenService tockenService) {
 
         int startSize = TestConstants.batchStart;
-        int endSize = startSize+1;
+        int endSize = startSize+3;
 
         for (int i = startSize; i < endSize; i++) {
 
@@ -90,24 +90,24 @@ public class JdbcTest {
     }
 
 
-    public static void updateTest(ClassPathXmlApplicationContext classPathXmlApplicationContext, TockenService TockenService, Tocken tocken) throws Exception {
+    public static void updateTest(ClassPathXmlApplicationContext classPathXmlApplicationContext, TockenService tockenService, Tocken tocken) throws Exception {
         EntityProxyFactory entityProxyFactory = (EntityProxyFactory) classPathXmlApplicationContext.getBean("entityProxyFactory");
         Tocken proxyTocken = entityProxyFactory.createProxyEntity(tocken);
         proxyTocken.setStatus("修改了3");
-        TockenService.updateTocken(proxyTocken);
+        tockenService.updateTocken(proxyTocken);
 
-        Tocken queryTocken = TockenService.getTocken(TestConstants.userId, TestConstants.stringId);
+        Tocken queryTocken = tockenService.getTocken(TestConstants.userId, TestConstants.stringId);
         System.out.println(queryTocken.getStatus());
     }
 
-    public static void deleteTest(ClassPathXmlApplicationContext classPathXmlApplicationContext, TockenService TockenService, Tocken tocken) throws Exception {
-        TockenService.deleteTocken(tocken);
-        Tocken queryTocken = TockenService.getTocken(TestConstants.userId, TestConstants.stringId);
+    public static void deleteTest(ClassPathXmlApplicationContext classPathXmlApplicationContext, TockenService tockenService, Tocken tocken) throws Exception {
+        tockenService.deleteTocken(tocken);
+        Tocken queryTocken = tockenService.getTocken(TestConstants.userId, TestConstants.stringId);
         System.out.println(queryTocken);
     }
 
     public static TockenService getTockenService(ClassPathXmlApplicationContext classPathXmlApplicationContext) {
-        TockenService TockenService = (TockenService) classPathXmlApplicationContext.getBean("TockenService");
-        return TockenService;
+        TockenService tockenService = (TockenService) classPathXmlApplicationContext.getBean("tockenService");
+        return tockenService;
     }
 }

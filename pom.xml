@@ -346,18 +346,18 @@
           </execution>
         </executions>
       </plugin>
-<!--      <plugin>-->
-<!--        <groupId>org.apache.maven.plugins</groupId>-->
-<!--        <artifactId>maven-surefire-plugin</artifactId>-->
-<!--        <version>3.0.0</version>-->
-<!--        <configuration>-->
-<!--          <argLine>-->
-<!--            &#45;&#45;add-opens java.base/java.lang=ALL-UNNAMED-->
-<!--            &#45;&#45;add-opens java.base/java.lang.reflect=ALL-UNNAMED-->
-<!--            &#45;&#45;add-opens java.base/java.io=ALL-UNNAMED-->
-<!--          </argLine>-->
-<!--        </configuration>-->
-<!--      </plugin>-->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.0.0</version>
+        <configuration>
+          <argLine>
+            --add-opens java.base/java.lang=ALL-UNNAMED
+            --add-opens java.base/java.lang.reflect=ALL-UNNAMED
+            --add-opens java.base/java.io=ALL-UNNAMED
+          </argLine>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 

@@ -53,7 +53,7 @@ public final class MessageGenerator {
                                                                outputProjectPath + msgObj.getPackPath() + '/');
 			try {
 				FileUtils.writeToFile(fileContent);
-				System.out.println("已生成"+msgObj.getOutputFileName());
+				System.out.println("generateMacroObject已生成"+msgObj.getOutputFileName());
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

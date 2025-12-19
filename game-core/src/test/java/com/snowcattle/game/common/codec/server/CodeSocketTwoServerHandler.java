@@ -13,6 +13,7 @@ public class CodeSocketTwoServerHandler extends SimpleChannelInboundHandler<Stri
         Thread.sleep(1000L);
 //        ctx.writeAndFlush(msg);
         System.out.println("服务端收到："+msg);
+        ctx.writeAndFlush("服务器端返回消息：" + msg + '\n') ;
     }
 
 

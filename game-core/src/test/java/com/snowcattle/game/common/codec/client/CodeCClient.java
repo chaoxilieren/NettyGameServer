@@ -27,7 +27,6 @@ public class CodeCClient {
             Bootstrap b = new Bootstrap();
             b.group(group).channel(NioSocketChannel.class)
                     .option(ChannelOption.TCP_NODELAY, true)
-                    .handler(new LoggingHandler(LogLevel.INFO))
                     .handler(new CodeCStringClientChannelInitializer());
             ChannelFuture f = b.connect(addr, port).sync();
             System.out.println("连接服务器:" + f.channel().remoteAddress() + ",本地地址:" + f.channel().localAddress());

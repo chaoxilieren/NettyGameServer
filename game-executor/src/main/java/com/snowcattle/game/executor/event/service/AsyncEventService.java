@@ -15,6 +15,7 @@ import com.snowcattle.game.thread.policy.RejectedPolicyType;
 import org.slf4j.Logger;
 
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Created by jwp on 2017/4/27.
@@ -32,7 +33,7 @@ public class AsyncEventService {
 
 
     /** 处理的消息总数 */
-    public long statisticsMessageCount = 0;
+    public AtomicLong statisticsMessageCount = new AtomicLong(0L);
 
     /**work线程池大小*/
     private final int workSize;
@@ -147,7 +148,7 @@ public class AsyncEventService {
         if (eventLogger.isInfoEnabled()) {
             begin = System.nanoTime();
         }
-        this.statisticsMessageCount++;
+        this.statisticsMessageCount.incrementAndGet();
         try {
              long shardignId = event.getShardingId();
              long shardingResult = shardingExpresson.getValue(shardignId);
@@ -166,7 +167,7 @@ public class AsyncEventService {
                     eventLogger.info("#AsyncEventService disptach event id:" + event.getId(), " shardingId:"
                             + event.getShardingId() + " Time:"
                             + time + "ms" + " Total:"
-                            + this.statisticsMessageCount);
+                            + this.statisticsMessageCount.get());
                 }
             }
         }

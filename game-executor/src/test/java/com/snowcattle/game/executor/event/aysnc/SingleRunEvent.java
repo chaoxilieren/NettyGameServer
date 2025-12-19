@@ -28,6 +28,6 @@ public class SingleRunEvent extends SingleEvent{
     public void call() {
         runId++;
 
-        System.out.println("runId" + runId + " Id" + getShardingId() );
+        System.out.println("runId：" + runId + " Id：" + getShardingId() );
     }
 }

@@ -19,7 +19,7 @@ import java.util.concurrent.*;
  * Created by jiangwenping on 17/2/20.
  * 默认不开启worker线程
  */
-public class QueueTcpMessageExecutorProcessor implements ITcpMessageProcessor{
+    public class QueueTcpMessageExecutorProcessor implements ITcpMessageProcessor{
     public static final Logger logger = Loggers.serverStatusStatistics;
     /** 消息队列 * */
     protected final BlockingQueue<AbstractNetMessage> queue;

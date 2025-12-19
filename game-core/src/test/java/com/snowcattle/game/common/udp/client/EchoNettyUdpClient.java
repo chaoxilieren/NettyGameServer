@@ -26,10 +26,8 @@ public final class EchoNettyUdpClient {
     }
 
     public static void main(String[] args) throws Exception {
-        LocalSpringServiceManager localSpringServiceManager = new LocalSpringServiceManager();
-        LocalMananger.getInstance().create(MessageRegistry.class, MessageRegistry.class);
-        localSpringServiceManager.setMessageRegistry(LocalMananger.getInstance().get(MessageRegistry.class));
-        LocalMananger.getInstance().setLocalSpringServiceManager(localSpringServiceManager);
+        // 使用 TestStartUp 完整初始化 Spring（推荐）
+        com.snowcattle.game.TestStartUp.startUpWithSpring();
 
         final NioEventLoopGroup nioEventLoopGroup = new NioEventLoopGroup();
 

@@ -226,7 +226,8 @@ public abstract class EntityService<T extends AbstractEntity> implements IEntity
                 shardingId = baseLongIDEntity.getId();
             }else if(entity instanceof BaseStringIDEntity){
                 BaseStringIDEntity baseStringIDEntity = (BaseStringIDEntity)entity;
-                shardingId = baseStringIDEntity.getId().hashCode();
+                // 有可能会为负数，与Integer.MAX_VALUE之后，保证为正数
+                shardingId = baseStringIDEntity.getId().hashCode() & Integer.MAX_VALUE;
             }
         }
         return shardingId;
