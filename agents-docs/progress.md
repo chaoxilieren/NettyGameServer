@@ -1,0 +1,32 @@
+# NettyGameServer 学习推进日志
+
+## 2026-04-21
+- 初始化学习计划文件：`agents-docs/task_plan.md`、`agents-docs/findings.md`、`agents-docs/progress.md`。
+- 下一步：定位消息解析/分发/处理主链路入口与缓存落地模块。
+- 已完成消息主链路梳理：TCP/HTTP 入口、解码工厂、命令映射、业务处理器、回包路径。
+- 已完成缓存与落地梳理：内存索引、脏标记、Redis 异步注册、定时刷盘、Mapper 落库。
+- 当前进行中：输出面向学习的路径与实操建议。
+- 已将学习相关文档统一迁移到 `agents-docs` 目录，后续文档按该约定存放。
+- 进入阶段5：结合 `NetProtoBufMessageTCPDecoder` 与 `NetProtoBufTcpMessageDecoderFactory` 开始登录消息解码实战。
+- 阶段5进展：已完成登录消息 `cmd=5` 的“命令常量 -> 消息类注解 -> 处理器注解”三点闭环定位。
+- 进入阶段6：已完成 `GameNetMessageTcpServerHandler -> DefaultTcpServerPipeLine -> NetMessageTcpDispatchLogic -> NetProtoBufMessageProcess` 分发链路走读。
+- 阶段6收口：已完成 `NetMessageProcessLogic -> GameFacade.dispatch -> OnlineTcpHandlerImpl -> NettySession.write(channel.writeAndFlush)` 回包闭环。
+- 已按阶段输出消息流动流程图文档：`agents-docs/message-flow.md`（包含4个阶段流程图 + 全链路时序图 + 排障定位建议）。
+- 已完成 `NettyTcpSession.update()` 线程归属专项分析，并输出文档：`agents-docs/update-thread-analysis.md`（含三种 Update 执行器差异与 TCP 消息执行线程结论）。
+- 已为 `agents-docs/update-thread-analysis.md` 补充分阶段 Mermaid 流程图（总体调度图、三执行器线程图、TCP 执行线程收口图）。
+- 已补充三泳道流程图（Netty线程 / Dispatch线程 / Update工作线程），并加入三种执行器在线程泳道中的差异图。
+- 已补充“DispatchThread 是否单线程（结论与例外）”章节与快速判断图，便于区分类语义与系统整体并发模型。
+- 已补充三种执行器的“使用场景 + 单轮性能对比 + 选型建议”，便于架构选型和压测前预判。
+- 已补充“为什么 Disruptor/RingBuffer 更快”的原理说明，并结合本项目调用路径给出性能差异与适用前提。
+- 已新增“开销对比（本项目实现视角）”：对象包装、队列跳数、线程切换点、顺序语义与吞吐潜力，并配对比流程图。
+- 已新增“Disruptor 模式下 EventBus 运作详解”：参与者职责、单个 IUpdate 生命周期、EventBus 边界与时序图。
+- 已新增“源码对照清单 + 建议阅读顺序”，可按步骤直接跳转到具体类与方法核对时序图。
+- 已完成“事件状态机设计取舍”总结：解释 Create/Update/Finish 循环必要性、复杂度来源、收益与简化方向。
+- 学习计划已推进到阶段7（缓存落地实战）并标记为进行中。
+- 已完成“同玩家消息顺序保证”分析：明确同会话顺序成立条件、Disruptor 并发边界、玩家维度乱序风险与治理建议。
+- 阶段7第一段已完成：以 `Order.status` 为样本，走通 `EntityProxy` 标脏 -> `EntityAysncServiceProxy` 写缓存 -> `AsyncDbRegisterCenter` 异步入队。
+- 已补充阶段7.1代理机制专项：明确实体代理/服务代理/异步代理工厂职责与切入点，确认异步链路以代理拦截为入口。
+- 阶段7第二段已完成：走通 `AsyncDbOperationCenter` 定时触发 -> `AsyncDbOperation` 消费 set/list -> `AsyncDBSaveTransactionEntity` 落库与清理回补闭环。
+- 阶段7第三段已完成：对 `AsyncDbOperation.saveDb` 做锁与事务正确性评估，识别了日志丢失窗口、异常吞没与回补不足等关键风险。
+- 阶段7第四段已完成：整理了不改代码条件下的端到端验收步骤、运行期观测指标与标准排障顺序。
+- 已进入阶段8并输出“缓存落地稳定性改造方案（仅方案）”：按止血/稳态/增强三期给出改造路径与验收标准。
